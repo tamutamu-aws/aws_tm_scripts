@@ -1,0 +1,31 @@
+#!groovy
+import hudson.security.*
+import jenkins.model.*
+
+def instance = Jenkins.getInstance()
+def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+
+
+def users = hudsonRealm.getAllUsers()
+users_s = users.collect { it.toString() }
+
+
+if ("#ADMIN_USER#" in users_s) {
+
+  println "Admin user already exists - Exit.."
+
+} else {
+
+  println "Create Admin User."
+
+  hudsonRealm.createAccount('#ADMIN_USER#', '#ADMIN_PASS#')
+  instance.setSecurityRealm(hudsonRealm)
+
+  def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+  strategy.setAllowAnonymousRead(false)
+
+  instance.setAuthorizationStrategy(strategy)
+  instance.save()
+
+}
+
